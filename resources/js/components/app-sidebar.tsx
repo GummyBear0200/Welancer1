@@ -2,7 +2,6 @@
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
-
 import {
   Sidebar,
   SidebarContent,
@@ -14,25 +13,30 @@ import {
 } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, UserPen, NotebookPen } from 'lucide-react';
+import { BookOpen, Folder, LayoutGrid, UserPen, NotebookPen, KeyRound } from 'lucide-react';
 import AppLogo from './app-logo';
-import { route } from 'ziggy-js'; // ← ADD THIS
+import { route } from 'ziggy-js';
 
 const mainNavItems: NavItem[] = [
- {
+  {
     title: 'Dashboard',
-    href: route('dashboard'), // WORKS
+    href: route('dashboard'),
     icon: LayoutGrid,
   },
   {
     title: 'Users',
-    href: '/users',
+    href: route('users.index'),
     icon: UserPen,
   },
   {
     title: 'Roles',
-    href: '/roles',
+    href: route('roles.index'),
     icon: NotebookPen,
+  },
+  {
+    title: 'Permissions', // ← Fixed: "Permission" → "Permissions"
+    href: route('permissions.index'), // ← Use route()
+    icon: KeyRound,
   },
 ];
 
