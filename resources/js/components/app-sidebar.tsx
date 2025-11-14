@@ -32,6 +32,7 @@ const mainNavItems: NavItem[] = [
   { title: 'Tasks', href: route('tasks.index'), icon: ScrollText },
   { title: 'Projects', href: route('projects.index'), icon: FolderOpenDot },
   { title: 'Leaderboard', href: route('leaderboard'), icon: Trophy },
+
 ];
 
 export function AppSidebar() {

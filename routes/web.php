@@ -10,6 +10,7 @@ use App\Http\Controllers\TasksController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\LeaderboardController;
 
+
 /*
 |--------------------------------------------------------------------------
 | Public Routes
@@ -37,6 +38,12 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::resource('tasks', TasksController::class)->names('tasks');
     Route::resource('projects', ProjectController::class)->names('projects');
    Route::get('/leaderboard', [LeaderboardController::class, 'index'])->name('leaderboard');
+//    Route::get('/dashboard', [DashboardController::class, 'index'])
+//     ->middleware(['auth', 'verified'])
+//     ->name('dashboard');
+
+   
+
 
     
 

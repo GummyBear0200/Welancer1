@@ -71,7 +71,7 @@ const Leaderboard: FC & { layout?: (page: ReactNode) => ReactNode } = () => {
         <div className="overflow-x-auto">
           <table className="w-full table-auto text-lg">
             <thead className="bg-gray-100 dark:bg-gray-700 text-left text-gray-800 dark:text-gray-200 font-bold text-xl">
-              <tr>
+              <tr>  
                 <th className="py-4 px-6">Rank</th>
                 <th className="py-4 px-6">User</th>
                 <th className="py-4 px-6">Tasks Completed</th>

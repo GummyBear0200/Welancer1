@@ -12,104 +12,117 @@ import AuthLayout from '@/layouts/auth-layout';
 
 export default function Register() {
     return (
-        <AuthLayout
-            title="Create an account"
-            description="Enter your details below to create your account"
-        >
+        <AuthLayout title="" description="">
             <Head title="Register" />
-            <Form
-                {...store.form()}
-                resetOnSuccess={['password', 'password_confirmation']}
-                disableWhileProcessing
-                className="flex flex-col gap-6"
-            >
-                {({ processing, errors }) => (
-                    <>
-                        <div className="grid gap-6">
-                            <div className="grid gap-2">
-                                <Label htmlFor="name">Name</Label>
-                                <Input
-                                    id="name"
-                                    type="text"
-                                    required
-                                    autoFocus
-                                    tabIndex={1}
-                                    autoComplete="name"
-                                    name="name"
-                                    placeholder="Full name"
-                                />
-                                <InputError
-                                    message={errors.name}
-                                    className="mt-2"
-                                />
+
+            {/* Centered Card */}
+            <div className="relative max-w-md mx-auto mt-12 p-10 rounded-2xl shadow-2xl backdrop-blur-lg bg-white/10 border border-white/20 text-white">
+
+                {/* Welcome Header */}
+                <h1 className="text-center text-4xl font-extrabold tracking-wide mb-2">
+                    WELCOME TO <span className="text-yellow-300">WELANCER</span>
+                </h1>
+                <p className="text-center text-gray-200 text-sm mb-8">
+                    Enter your details to create an account
+                </p>
+
+                <Form
+                    {...store.form()}
+                    resetOnSuccess={['password', 'password_confirmation']}
+                    disableWhileProcessing
+                    className="flex flex-col gap-6"
+                >
+                    {({ processing, errors }) => (
+                        <>
+                            <div className="grid gap-6">
+
+                                {/* Name */}
+                                <div className="grid gap-2">
+                                    <Label htmlFor="name" className="text-white">
+                                        Full Name
+                                    </Label>
+                                    <Input
+                                        id="name"
+                                        type="text"
+                                        name="name"
+                                        required
+                                        autoFocus
+                                        placeholder="Your full name"
+                                        className="bg-white/20 text-white placeholder:text-gray-300 border-white/30"
+                                    />
+                                    <InputError message={errors.name} />
+                                </div>
+
+                                {/* Email */}
+                                <div className="grid gap-2">
+                                    <Label htmlFor="email" className="text-white">
+                                        Email address
+                                    </Label>
+                                    <Input
+                                        id="email"
+                                        type="email"
+                                        name="email"
+                                        required
+                                        placeholder="email@example.com"
+                                        className="bg-white/20 text-white placeholder:text-gray-300 border-white/30"
+                                    />
+                                    <InputError message={errors.email} />
+                                </div>
+
+                                {/* Password */}
+                                <div className="grid gap-2">
+                                    <Label htmlFor="password" className="text-white">
+                                        Password
+                                    </Label>
+                                    <Input
+                                        id="password"
+                                        type="password"
+                                        name="password"
+                                        required
+                                        placeholder="Password"
+                                        className="bg-white/20 text-white placeholder:text-gray-300 border-white/30"
+                                    />
+                                    <InputError message={errors.password} />
+                                </div>
+
+                                {/* Confirm Password */}
+                                <div className="grid gap-2">
+                                    <Label htmlFor="password_confirmation" className="text-white">
+                                        Confirm Password
+                                    </Label>
+                                    <Input
+                                        id="password_confirmation"
+                                        type="password"
+                                        name="password_confirmation"
+                                        required
+                                        placeholder="Confirm Password"
+                                        className="bg-white/20 text-white placeholder:text-gray-300 border-white/30"
+                                    />
+                                    <InputError message={errors.password_confirmation} />
+                                </div>
+
+                                {/* Submit Button */}
+                                <Button
+                                    type="submit"
+                                    className="mt-2 w-full py-3 text-lg font-semibold bg-yellow-400 hover:bg-yellow-500 text-black rounded-xl"
+                                    disabled={processing}
+                                >
+                                    {processing && <Spinner />}
+                                    Create account
+                                </Button>
                             </div>
 
-                            <div className="grid gap-2">
-                                <Label htmlFor="email">Email address</Label>
-                                <Input
-                                    id="email"
-                                    type="email"
-                                    required
-                                    tabIndex={2}
-                                    autoComplete="email"
-                                    name="email"
-                                    placeholder="email@example.com"
-                                />
-                                <InputError message={errors.email} />
+                            {/* Login Link */}
+                            <div className="text-center text-sm text-gray-200 mt-4">
+                                Already have an account?{' '}
+                                <TextLink href={login()} className="text-yellow-300 hover:underline">
+                                    Log in
+                                </TextLink>
                             </div>
-
-                            <div className="grid gap-2">
-                                <Label htmlFor="password">Password</Label>
-                                <Input
-                                    id="password"
-                                    type="password"
-                                    required
-                                    tabIndex={3}
-                                    autoComplete="new-password"
-                                    name="password"
-                                    placeholder="Password"
-                                />
-                                <InputError message={errors.password} />
-                            </div>
-
-                            <div className="grid gap-2">
-                                <Label htmlFor="password_confirmation">
-                                    Confirm password
-                                </Label>
-                                <Input
-                                    id="password_confirmation"
-                                    type="password"
-                                    required
-                                    tabIndex={4}
-                                    autoComplete="new-password"
-                                    name="password_confirmation"
-                                    placeholder="Confirm password"
-                                />
-                                <InputError
-                                    message={errors.password_confirmation}
-                                />
-                            </div>
-
-                            <Button
-                                type="submit"
-                                className="mt-2 w-full"
-                                tabIndex={5}
-                                data-test="register-user-button"
-                            >
-                                {processing && <Spinner />}
-                                Create account
-                            </Button>
-                        </div>
-
-                        <div className="text-center text-sm text-muted-foreground">
-                            Already have an account?{' '}
-                            <TextLink href={login()} tabIndex={6}>
-                                Log in
-                            </TextLink>
-                        </div>
-                    </>
-                )}
-            </Form>
+                        </>
+                    )}
+                </Form>
+            </div>
         </AuthLayout>
     );
 }

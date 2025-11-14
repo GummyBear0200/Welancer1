@@ -1,74 +1,93 @@
-import { PlaceholderPattern } from '@/components/ui/placeholder-pattern';
+import { usePage } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import { dashboard } from '@/routes';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
-import { ChartBar, Users, DollarSign } from 'lucide-react';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  Cell,
+} from 'recharts';
 
 const breadcrumbs: BreadcrumbItem[] = [
-  {
-    title: 'Dashboard',
-    href: dashboard().url,
-  },
+  { title: 'Dashboard', href: dashboard().url },
 ];
 
 export default function Dashboard() {
+  const { tasks = [], projects = [] } = usePage().props as any;
+
+  // Aggregate task statuses
+  const statusData = [
+    { status: 'pending', count: tasks.filter((t: any) => t.status === 'pending').length },
+    { status: 'in_progress', count: tasks.filter((t: any) => t.status === 'in_progress').length },
+    { status: 'completed', count: tasks.filter((t: any) => t.status === 'completed').length },
+    { status: 'overdue', count: tasks.filter((t: any) => t.status === 'overdue').length },
+  ];
+
+  // Top performers by completed tasks or quality score
+  const leaderboard = projects
+    .map((p: any) => ({
+      name: p.name,
+      completedTasks: tasks.filter((t: any) => t.project_id === p.id && t.status === 'completed').length,
+      avgQuality: Number(
+        (tasks
+          .filter((t: any) => t.project_id === p.id && t.quality_score !== null)
+          .reduce((acc: number, t: any) => acc + t.quality_score, 0) /
+          tasks.filter((t: any) => t.project_id === p.id && t.quality_score !== null).length || 0
+        ).toFixed(2)
+      ),
+    }))
+    .sort((a: any, b: any) => b.completedTasks - a.completedTasks);
+
+  const COLORS = ['#FACC15', '#3B82F6', '#10B981', '#EF4444']; // yellow, blue, green, red
+
   return (
     <AppLayout breadcrumbs={breadcrumbs}>
       <Head title="Dashboard" />
       <div className="flex flex-col gap-6 p-4">
-        {/* Top Stats Cards */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
-          <div className="flex items-center gap-4 rounded-xl border border-sidebar-border/70 p-4 shadow-sm transition hover:shadow-lg dark:border-sidebar-border">
-            <div className="rounded-full bg-blue-500 p-3 text-white">
-              <Users className="h-6 w-6" />
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold">Users</h3>
-              <p className="text-gray-500 dark:text-gray-400">1,234</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-4 rounded-xl border border-sidebar-border/70 p-4 shadow-sm transition hover:shadow-lg dark:border-sidebar-border">
-            <div className="rounded-full bg-green-500 p-3 text-white">
-              <DollarSign className="h-6 w-6" />
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold">Revenue</h3>
-              <p className="text-gray-500 dark:text-gray-400">$12,345</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-4 rounded-xl border border-sidebar-border/70 p-4 shadow-sm transition hover:shadow-lg dark:border-sidebar-border">
-            <div className="rounded-full bg-purple-500 p-3 text-white">
-              <ChartBar className="h-6 w-6" />
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold">Analytics</h3>
-              <p className="text-gray-500 dark:text-gray-400">Active</p>
-            </div>
-          </div>
+        {/* Status Graph */}
+        <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-4">
+          <h2 className="text-xl font-semibold mb-4">Task Status Overview</h2>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={statusData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
+              <XAxis dataKey="status" />
+              <YAxis />
+              <Tooltip />
+              <Bar dataKey="count">
+                {statusData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
         </div>
 
-        {/* Main Chart / Content Area */}
-        <div className="relative min-h-[400px] overflow-hidden rounded-xl border border-sidebar-border/70 shadow-sm dark:border-sidebar-border">
-          <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
-          <div className="absolute inset-0 flex items-center justify-center text-gray-400 dark:text-gray-500">
-            <p>Main Dashboard Chart / Content</p>
-          </div>
-        </div>
-
-        {/* Optional secondary section */}
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <div className="relative min-h-[200px] overflow-hidden rounded-xl border border-sidebar-border/70 shadow-sm dark:border-sidebar-border">
-            <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
-            <div className="absolute inset-0 flex items-center justify-center text-gray-400 dark:text-gray-500">
-              Secondary Info Box
-            </div>
-          </div>
-          <div className="relative min-h-[200px] overflow-hidden rounded-xl border border-sidebar-border/70 shadow-sm dark:border-sidebar-border">
-            <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
-            <div className="absolute inset-0 flex items-center justify-center text-gray-400 dark:text-gray-500">
-              Secondary Info Box
-            </div>
+        {/* Leaderboard */}
+        <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-4">
+          <h2 className="text-xl font-semibold mb-4">Leaderboard - Top Projects</h2>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-700">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Completed Tasks</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Avg Quality Score</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                {leaderboard.map((p: any, index: number) => (
+                  <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-200">{p.name}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{p.completedTasks}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{p.avgQuality}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
