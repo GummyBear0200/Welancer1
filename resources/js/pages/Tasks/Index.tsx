@@ -1,150 +1,159 @@
-import React, { ReactNode, FC } from 'react';
-import { usePage, Link, router } from '@inertiajs/react';
+import React, { ReactNode } from 'react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import { motion } from 'framer-motion';
+import { CheckCircle, Clock, AlertCircle, Pencil, Trash2, Plus } from 'lucide-react';
 
 interface Task {
   id: number;
-  project_id: number;
   title: string;
-  description?: string;
-  assigned_to?: number;
-  created_by: number;
   status: 'pending' | 'in_progress' | 'completed' | 'overdue';
   priority: 'low' | 'medium' | 'high' | 'urgent';
-  start_date?: string;
   due_date?: string;
-  completed_date?: string;
-  estimated_hours?: number;
-  actual_hours?: number;
-  quality_score?: number;
-  created_at: string;
-  updated_at: string;
 }
 
-interface PageProps {
-  tasks?: Task[];
-  flash?: { success?: string };
-}
-
-interface TasksIndexType extends FC {
-  layout?: (page: ReactNode) => ReactNode;
-}
-
-const TasksIndex: TasksIndexType = () => {
-  const { tasks = [], flash } = usePage().props as PageProps;
+const TasksIndex = () => {
+  const { tasks = [], flash } = usePage<{ tasks: Task[]; flash?: { success?: string } }>().props;
 
   const handleDelete = (id: number) => {
-    if (confirm('Are you sure you want to delete this task?')) {
-      router.delete(`/tasks/${id}`);
-    }
+    if (confirm('Delete task?')) router.delete(`/tasks/${id}`);
   };
 
-  const getStatusColor = (status: Task['status']) => {
-    switch (status) {
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'in_progress': return 'bg-blue-100 text-blue-800';
-      case 'completed': return 'bg-green-100 text-green-800';
-      case 'overdue': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
+  const getBadge = (type: 'status' | 'priority', value: Task['status'] | Task['priority']) => {
+    const statusMap = {
+      pending: { color: 'bg-yellow-100 text-yellow-800', icon: Clock },
+      in_progress: { color: 'bg-blue-100 text-blue-800', icon: Clock },
+      completed: { color: 'bg-green-100 text-green-800', icon: CheckCircle },
+      overdue: { color: 'bg-red-100 text-red-800', icon: AlertCircle },
+    } as const;
 
-  const getPriorityColor = (priority: Task['priority']) => {
-    switch (priority) {
-      case 'low': return 'bg-green-200 text-green-800';
-      case 'medium': return 'bg-blue-200 text-blue-800';
-      case 'high': return 'bg-yellow-200 text-yellow-800';
-      case 'urgent': return 'bg-red-200 text-red-800';
-      default: return 'bg-gray-200 text-gray-800';
+    const priorityMap = {
+      low: 'bg-green-100 text-green-800',
+      medium: 'bg-blue-100 text-blue-800',
+      high: 'bg-yellow-100 text-yellow-800',
+      urgent: 'bg-red-100 text-red-800',
+    } as const;
+
+    if (type === 'status') {
+      const item = statusMap[value as keyof typeof statusMap];
+      const Icon = item.icon;
+      return (
+        <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${item.color}`}>
+          <Icon className="w-3.5 h-3.5" />
+          {value.replace('_', ' ')}
+        </span>
+      );
+    } else {
+      const color = priorityMap[value as keyof typeof priorityMap];
+      return (
+        <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${color}`}>
+          {value.toUpperCase()}
+        </span>
+      );
     }
   };
 
   return (
-    <div className="w-full min-h-screen p-8 bg-gray-50 dark:bg-gray-900">
-      <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <h1 className="text-4xl font-extrabold">Tasks</h1>
-        <Link
-          href="/tasks/create"
-          className="bg-blue-600 text-white px-6 py-3 rounded-lg shadow hover:bg-blue-700 transition"
-        >
-          Create Task
-        </Link>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 md:p-6">
+      <div className="max-w-7xl mx-auto">
 
-      {flash?.success && (
-        <div className="bg-green-100 text-green-800 p-3 rounded mb-6">
-          {flash.success}
+        {flash?.success && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6 p-4 bg-green-100 text-green-800 rounded-xl shadow-sm border border-green-200"
+          >
+            {flash.success}
+          </motion.div>
+        )}
+
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900">Tasks</h1>
+          <Link
+            href="/tasks/create"
+            className="bg-yellow-400 hover:bg-yellow-500 text-black font-semibold px-5 py-3 rounded-xl shadow-lg transition-all transform hover:scale-105 flex items-center gap-2"
+          >
+            <Plus className="w-5 h-5" /> New Task
+          </Link>
         </div>
-      )}
 
-   <motion.div
-  initial={{ opacity: 0, y: 20 }}
-  animate={{ opacity: 1, y: 0 }}
-  transition={{ duration: 0.5 }}
-  className="bg-white dark:bg-gray-800 shadow-2xl rounded-xl overflow-x-auto border border-gray-200 dark:border-gray-700"
->
-  <table className="min-w-full table-auto text-sm">
-    <thead className="bg-gray-100 dark:bg-gray-700 text-left font-semibold text-gray-800 dark:text-gray-200">
-      <tr>
-        {['ID', 'Title', 'Description', 'Status', 'Priority', 'Start Date', 'Due Date', 'Completed Date', 'Est. Hrs', 'Act. Hrs', 'Quality', 'Created At', 'Updated At', 'Actions'].map(header => (
-          <th key={header} className="px-3 py-2 border">{header}</th>
-        ))}
-      </tr>
-    </thead>
-    <tbody>
-      {tasks.map(task => (
-        <motion.tr
-          key={task.id}
-          whileHover={{ scale: 1.01 }}
-          className="transition hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden"
         >
-          <td className="px-3 py-2 border">{task.id}</td>
-          <td className="px-3 py-2 border font-semibold">{task.title}</td>
-          <td className="px-3 py-2 border">{task.description || '-'}</td>
-          <td className="px-3 py-2 border">
-            <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(task.status)}`}>
-              {task.status.replace('_', ' ')}
-            </span>
-          </td>
-          <td className="px-3 py-2 border">
-            <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getPriorityColor(task.priority)}`}>
-              {task.priority.toUpperCase()}
-            </span>
-          </td>
-          <td className="px-3 py-2 border">{task.start_date || '-'}</td>
-          <td className="px-3 py-2 border">{task.due_date || '-'}</td>
-          <td className="px-3 py-2 border">{task.completed_date || '-'}</td>
-          <td className="px-3 py-2 border">{task.estimated_hours ?? '-'}</td>
-          <td className="px-3 py-2 border">{task.actual_hours ?? '-'}</td>
-          <td className="px-3 py-2 border">{task.quality_score ?? '-'}</td>
-          <td className="px-3 py-2 border">{new Date(task.created_at).toLocaleString()}</td>
-          <td className="px-3 py-2 border">{new Date(task.updated_at).toLocaleString()}</td>
-          <td className="px-3 py-2 border flex gap-1">
-            <Link
-              href={`/tasks/${task.id}/edit`}
-              className="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600 text-xs"
-            >
-              Edit
-            </Link>
-            <button
-              type="button"
-              onClick={() => handleDelete(task.id)}
-              className="bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700 text-xs"
-            >
-              Delete
-            </button>
-          </td>
-        </motion.tr>
-      ))}
-    </tbody>
-  </table>
-</motion.div>
+          <div className="p-4 border-b bg-gray-50">
+            <p className="text-sm font-medium text-gray-700">
+              {tasks.length} task{tasks.length !== 1 ? 's' : ''}
+            </p>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-200">
+                  {['Title', 'Status', 'Priority', 'Due', 'Actions'].map(h => (
+                    <th
+                      key={h}
+                      className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                    >
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {tasks.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="px-6 py-20 text-center">
+                      <Clock className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                      <p className="text-lg font-medium text-gray-600">No tasks</p>
+                    </td>
+                  </tr>
+                ) : (
+                  tasks.map((task, i) => (
+                    <motion.tr
+                      key={task.id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.05 }}
+                      className="hover:bg-gray-50/70 group transition-all"
+                    >
+                      <td className="px-6 py-5 font-medium text-gray-900">{task.title}</td>
+                      <td className="px-6 py-5">{getBadge('status', task.status)}</td>
+                      <td className="px-6 py-5">{getBadge('priority', task.priority)}</td>
+                      <td className="px-6 py-5 text-sm text-gray-600">
+                        {task.due_date ? new Date(task.due_date).toLocaleDateString() : '—'}
+                      </td>
+                      <td className="px-6 py-5">
+                        <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Link
+                            href={`/tasks/${task.id}/edit`}
+                            className="p-2 rounded-lg bg-yellow-50 text-yellow-700 hover:bg-yellow-100"
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </Link>
+                          <button
+                            onClick={() => handleDelete(task.id)}
+                            className="p-2 rounded-lg bg-red-50 text-red-700 hover:bg-red-100"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </motion.tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </motion.div>
+      </div>
     </div>
   );
 };
 
-TasksIndex.layout = (page: ReactNode) => (
+(TasksIndex as any).layout = (page: ReactNode) => (
   <AppLayout breadcrumbs={[{ title: 'Tasks', href: '/tasks' }]}>{page}</AppLayout>
 );
 

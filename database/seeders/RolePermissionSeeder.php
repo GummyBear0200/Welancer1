@@ -32,60 +32,46 @@ class RolePermissionSeeder extends Seeder
         // Assign limited permissions to Staff
         $hr->syncPermissions([
             'access.dashboard',
-            'appointments.view',
-            'appointments.create',
-            'appointments.edit',  
-            'access.schedules',
-            'access.appointments',
-            'access.pets',
-            'pets.view',
-            'pets.create',
-            'pets.edit',
-            'pets.delete',
-            'services.view',
-            'services.edit',
-            'services.create',
-            'access.history',
+            'tasks.edit',
+            'tasks.create',
+            'tasks.delete',  
+            'access.tasks',
+            'access.projects',           
+            'projects.view',
+            'projects.create',
+            'projects.edit',
+            'projects.delete',
+            
+            'tasks.edit',
+            'tasks.create',
+            
         ]);
 
         $manager->syncPermissions([
             'access.dashboard',
-            'appointments.view',
-            'appointments.edit',  
-            'access.schedules',
-            'access.appointments',
-            'access.pets',
-            'pets.view',
-            'pets.edit',
-            'access.history',
+            'projects.view',
+            'projects.edit',  
+            'access.projects',
+            'access.tasks',
+            'projects.delete',     
+            'tasks.edit',
+            
 
         ]);
 
         $employee->syncPermissions([
             'access.dashboard',
-            'appointments.view',
-            'appointments.edit',  
-            'access.schedules',
-            'access.appointments',
-            'access.pets',
-            'pets.view',
-            'pets.edit',
-            'access.history',
+            'tasks.edit',  
+            'access.leaderboard'
+            
+           
+            
+            
+            
 
         ]);
 
-        $employee->syncPermissions([
-            'appointments.view',
-            'appointments.create',
-            'appointments.edit',
-            'access.schedules',
-            'access.appointments',
-            'access.pets',
-            'access.services',
-            'pets.view',
-            'pets.create',
-            'pets.edit',
-        ]);
+     
 
         $this->command->info('Roles and permissions successfully seeded!');
     }

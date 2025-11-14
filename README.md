@@ -8,4 +8,4 @@ npm install @inertiajs/react @inertiajs/core
 npm install ziggy-js
 npm install @inertiajs/inertia
 npm install -D @types/react @types/react-dom
-
+composer require spatie/laravel-permission

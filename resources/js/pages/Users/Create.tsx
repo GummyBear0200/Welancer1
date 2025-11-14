@@ -1,127 +1,143 @@
+import { useForm, Link } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem } from '@/types';
-import { Head, Link } from '@inertiajs/react';
-import { router } from '@inertiajs/react';
-import { useState } from 'react';
+import { motion } from 'framer-motion';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import InputError from '@/components/input-error';
+import { ArrowLeft } from 'lucide-react';
+import React, { ReactNode } from 'react';
 
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Create User',
-        href: '/users',
-    },
+const breadcrumbs = [
+  { title: 'Users', href: '/users' },
+  { title: 'Create', href: '/users/create' },
 ];
 
-export default function Create() {
-    const [formData, setFormData] = useState({
-        name: '',
-        email: '',
-        password: '',
-        password_confirmation: '',  // Added this
-    });
+const Create = ({ roles }: { roles: { id: number; name: string }[] }) => {
+  const { data, setData, post, processing, errors } = useForm({
+    name: '',
+    email: '',
+    password: '',
+    password_confirmation: '',
+    role_id: '',
+  });
 
-    const [errors, setErrors] = useState<{ [key: string]: string }>({});  // Added for displaying errors
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    post('/users');
+  };
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 md:p-6 flex items-center justify-center"
+    >
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-gray-200 p-8">
+        
+        {/* Header */}
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-2xl font-bold text-gray-900">Create User</h1>
+          <Link href="/users" className="text-gray-600 hover:text-gray-800 flex items-center gap-2">
+            <ArrowLeft className="w-4 h-4" /> Back
+          </Link>
+        </div>
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        router.post('/users', formData, {
-            onSuccess: () => {
-                setFormData({ name: '', email: '', password: '', password_confirmation: '' });
-                setErrors({});  // Clear errors on success
-                // Optional: Redirect to users list
-                router.visit('/users');
-            },
-            onError: (formErrors) => {
-                setErrors(formErrors);  // Set errors to state for display
-                console.error('Form submission errors:', formErrors);  // Log for debugging
-            },
-        });
-    };
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-6">
 
-    return (
-        <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Create User" />
+          {/* Name */}
+          <div>
+            <Label htmlFor="name">Full Name</Label>
+            <Input
+              id="name"
+              type="text"
+              value={data.name}
+              onChange={(e) => setData('name', e.target.value)}
+              className="mt-2 h-12 rounded-xl"
+              required
+            />
+            <InputError message={errors.name} className="mt-1" />
+          </div>
 
-            <div className="max-w-md mx-auto bg-white shadow-md rounded-lg p-6 mt-6">
-                <h1 className="text-xl font-semibold mb-4 text-gray-800">Create User</h1>
+          {/* Email */}
+          <div>
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              type="email"
+              value={data.email}
+              onChange={(e) => setData('email', e.target.value)}
+              className="mt-2 h-12 rounded-xl"
+              required
+            />
+            <InputError message={errors.email} className="mt-1" />
+          </div>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <div>
-                        <label className="block text-gray-700 mb-1">Name</label>
-                        <input
-                            type="text"
-                            name="name"
-                            value={formData.name}
-                            onChange={handleChange}
-                            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-                            placeholder="Enter name"
-                            required
-                        />
-                        {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
-                    </div>
+          {/* Role */}
+          <div>
+            <Label htmlFor="role_id">Select Role</Label>
+            <select
+              id="role_id"
+              value={data.role_id}
+              onChange={(e) => setData('role_id', e.target.value)}
+              className="mt-2 h-12 w-full rounded-xl border border-gray-300 px-3"
+              required
+            >
+              <option value="">Choose a Role</option>
+              {roles.map((role) => (
+                <option key={role.id} value={role.id}>
+                  {role.name}
+                </option>
+              ))}
+            </select>
+            <InputError message={errors.role_id} className="mt-1" />
+          </div>
 
-                    <div>
-                        <label className="block text-gray-700 mb-1">Email</label>
-                        <input
-                            type="email"
-                            name="email"
-                            value={formData.email}
-                            onChange={handleChange}
-                            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-                            placeholder="Enter email"
-                            required
-                        />
-                        {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
-                    </div>
+          {/* Password */}
+          <div>
+            <Label htmlFor="password">Password</Label>
+            <Input
+              id="password"
+              type="password"
+              value={data.password}
+              onChange={(e) => setData('password', e.target.value)}
+              className="mt-2 h-12 rounded-xl"
+              required
+            />
+            <InputError message={errors.password} className="mt-1" />
+          </div>
 
-                    <div>
-                        <label className="block text-gray-700 mb-1">Password</label>
-                        <input
-                            type="password"
-                            name="password"
-                            value={formData.password}
-                            onChange={handleChange}
-                            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-                            placeholder="Enter password"
-                            required
-                        />
-                        {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
-                    </div>
+          {/* Confirm Password */}
+          <div>
+            <Label htmlFor="password_confirmation">Confirm Password</Label>
+            <Input
+              id="password_confirmation"
+              type="password"
+              value={data.password_confirmation}
+              onChange={(e) => setData('password_confirmation', e.target.value)}
+              className="mt-2 h-12 rounded-xl"
+              required
+            />
+            <InputError message={errors.password_confirmation} className="mt-1" />
+          </div>
 
-                    <div>
-                        <label className="block text-gray-700 mb-1">Confirm Password</label>
-                        <input
-                            type="password"
-                            name="password_confirmation"
-                            value={formData.password_confirmation}
-                            onChange={handleChange}
-                            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-                            placeholder="Confirm password"
-                            required
-                        />
-                        {errors.password_confirmation && <p className="text-red-500 text-sm mt-1">{errors.password_confirmation}</p>}
-                    </div>
+          {/* Submit */}
+          <Button
+            type="submit"
+            disabled={processing}
+            className="w-full h-12 rounded-xl bg-yellow-400 hover:bg-yellow-500 text-black font-bold shadow-md transition-all"
+          >
+            {processing ? 'Creating...' : 'Create User'}
+          </Button>
+        </form>
+      </div>
+    </motion.div>
+  );
+};
 
-                    <div className="flex justify-between items-center mt-6">
-                        <Link
-                            href="/users"
-                            className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition"
-                        >
-                            Back
-                        </Link>
+Create.layout = (page: ReactNode) => (
+  <AppLayout breadcrumbs={breadcrumbs}>{page}</AppLayout>
+);
 
-                        <button
-                            type="submit"
-                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-                        >
-                            Create
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </AppLayout>
-    );
-}   
+export default Create;

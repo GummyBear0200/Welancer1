@@ -20,23 +20,27 @@ import {
   KeyRound,
   ScrollText,
   FolderOpenDot,
-  Trophy
+  Trophy,
 } from 'lucide-react';
 import { route } from 'ziggy-js';
 
-const mainNavItems: NavItem[] = [
-  { title: 'Dashboard', href: route('dashboard'), icon: LayoutGrid },
-  { title: 'Users', href: route('users.index'), icon: UserPen },
-  { title: 'Roles', href: route('roles.index'), icon: NotebookPen },
-  { title: 'Permissions', href: route('permissions.index'), icon: KeyRound },
-  { title: 'Tasks', href: route('tasks.index'), icon: ScrollText },
-  { title: 'Projects', href: route('projects.index'), icon: FolderOpenDot },
-  { title: 'Leaderboard', href: route('leaderboard'), icon: Trophy },
-
-];
-
 export function AppSidebar() {
-  const { url } = usePage();
+  const { url, auth } = usePage().props as any;
+  const permissions: string[] = auth?.user?.permissions || []; // permissions array from backend
+
+  // Define navigation items and required permission for each
+  const navItems: (NavItem & { permission?: string })[] = [
+    { title: 'Dashboard', href: route('dashboard'), icon: LayoutGrid }, // always accessible
+    { title: 'Users', href: route('users.index'), icon: UserPen, permission: 'manage.users' },
+    { title: 'Roles', href: route('roles.index'), icon: NotebookPen, permission: 'manage.roles' },
+    { title: 'Permissions', href: route('permissions.index'), icon: KeyRound, permission: 'manage.permissions' },
+    { title: 'Tasks', href: route('tasks.index'), icon: ScrollText},
+    { title: 'Projects', href: route('projects.index'), icon: FolderOpenDot},
+    { title: 'Leaderboard', href: route('leaderboard'), icon: Trophy }, // always accessible
+  ];
+
+  // Filter items based on user permissions
+  const mainNavItems = navItems.filter(item => !item.permission || permissions.includes(item.permission));
 
   return (
     <Sidebar
@@ -53,15 +57,8 @@ export function AppSidebar() {
                 href={route('dashboard')}
                 className="flex items-center gap-3 transition-transform hover:scale-105"
               >
-                {/* Use public folder logo */}
-                <img
-                  src="/images/we-lancer-logo.jpg"
-                  alt="WeLancer Logo"
-                  className="h-8 w-8"
-                />
-                <span className="font-bold text-xl text-gray-800 dark:text-white">
-                  WeLancer
-                </span>
+                <img src="/images/we-lancer-logo.jpg" alt="WeLancer Logo" className="h-8 w-8" />
+                <span className="font-bold text-xl text-gray-800 dark:text-white">WeLancer</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -70,7 +67,7 @@ export function AppSidebar() {
 
       {/* Main Navigation */}
       <SidebarContent className="mt-6">
-        {mainNavItems.map((item) => {
+        {mainNavItems.map(item => {
           const Icon = item.icon as React.FC<React.SVGProps<SVGSVGElement>>;
           const isActive = url === item.href;
 
@@ -103,16 +100,8 @@ export function AppSidebar() {
         <NavUser />
         <NavFooter
           items={[
-            {
-              title: 'Repository',
-              href: 'https://github.com/laravel/react-starter-kit',
-              icon: Folder,
-            },
-            {
-              title: 'Documentation',
-              href: 'https://laravel.com/docs/starter-kits#react',
-              icon: BookOpen,
-            },
+            { title: 'Repository', href: 'https://github.com/laravel/react-starter-kit', icon: Folder },
+            { title: 'Documentation', href: 'https://laravel.com/docs/starter-kits#react', icon: BookOpen },
           ]}
           className="mt-4"
         />

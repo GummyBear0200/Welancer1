@@ -31,16 +31,16 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('/dashboard', fn() => Inertia::render('dashboard'))->name('dashboard');
 
     // Resource Routes
-    Route::resource('users', UserController::class)->except(['show'])->names('users');
+Route::resource('users', UserController::class)->names('users');
+
+
   Route::resource('roles', RolesController::class);
 
     Route::resource('permissions', PermissionController::class)->except(['show'])->names('permissions');
     Route::resource('tasks', TasksController::class)->names('tasks');
     Route::resource('projects', ProjectController::class)->names('projects');
    Route::get('/leaderboard', [LeaderboardController::class, 'index'])->name('leaderboard');
-//    Route::get('/dashboard', [DashboardController::class, 'index'])
-//     ->middleware(['auth', 'verified'])
-//     ->name('dashboard');
+
 
    
 

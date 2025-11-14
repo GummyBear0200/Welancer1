@@ -1,14 +1,20 @@
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link, router } from '@inertiajs/react';
-import { useEffect, useState } from 'react';
-import { PencilIcon } from '@heroicons/react/24/outline';  // Import for the edit icon
+import { Head, Link, router, usePage } from '@inertiajs/react';
+import { useState, useEffect } from 'react';
+import { PencilIcon } from '@heroicons/react/24/outline';
+
+interface Role {
+    id: number;
+    name: string;
+}
 
 interface Props {
     user: {
         id: number;
         name: string;
         email: string;
+        role_id?: number; // assuming backend provides user's current role id
     };
 }
 
@@ -20,16 +26,19 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function Edit({ user }: Props) {
+    const { roles } = usePage<{ roles: Role[] }>().props;
+
     const [formData, setFormData] = useState({
         name: user.name,
         email: user.email,
         password: '',
         password_confirmation: '',
+        role_id: user.role_id || '', // pre-fill current role
     });
 
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
@@ -55,6 +64,7 @@ export default function Edit({ user }: Props) {
                 <h1 className="text-xl font-semibold mb-4 text-gray-800">Edit User</h1>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
+                    {/* Name */}
                     <div>
                         <label className="block text-gray-700 mb-1">Name</label>
                         <input
@@ -69,6 +79,7 @@ export default function Edit({ user }: Props) {
                         {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
                     </div>
 
+                    {/* Email */}
                     <div>
                         <label className="block text-gray-700 mb-1">Email</label>
                         <input
@@ -83,6 +94,7 @@ export default function Edit({ user }: Props) {
                         {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
                     </div>
 
+                    {/* Password */}
                     <div>
                         <label className="block text-gray-700 mb-1">Password (leave blank to keep current)</label>
                         <input
@@ -96,6 +108,7 @@ export default function Edit({ user }: Props) {
                         {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
                     </div>
 
+                    {/* Confirm Password */}
                     <div>
                         <label className="block text-gray-700 mb-1">Confirm Password</label>
                         <input
@@ -109,6 +122,27 @@ export default function Edit({ user }: Props) {
                         {errors.password_confirmation && <p className="text-red-500 text-sm mt-1">{errors.password_confirmation}</p>}
                     </div>
 
+                    {/* Role Selection */}
+                    <div>
+                        <label className="block text-gray-700 mb-1">Role</label>
+                        <select
+                            name="role_id"
+                            value={formData.role_id}
+                            onChange={handleChange}
+                            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                            required
+                        >
+                            <option value="">Select a role</option>
+                            {roles.map(role => (
+                                <option key={role.id} value={role.id}>
+                                    {role.name}
+                                </option>
+                            ))}
+                        </select>
+                        {errors.role_id && <p className="text-red-500 text-sm mt-1">{errors.role_id}</p>}
+                    </div>
+
+                    {/* Buttons */}
                     <div className="flex justify-between items-center mt-6">
                         <Link
                             href="/users"
@@ -121,7 +155,7 @@ export default function Edit({ user }: Props) {
                             type="submit"
                             className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
                         >
-                            <PencilIcon className="h-5 w-5 mr-2" />  {/* Added edit icon inside the button */}
+                            <PencilIcon className="h-5 w-5 mr-2" />
                             Update
                         </button>
                     </div>

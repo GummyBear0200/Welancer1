@@ -1,185 +1,103 @@
-// resources/js/pages/Roles/Create.tsx
+import { useForm, Link } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem } from '@/types';
-import { Head, Link, useForm } from '@inertiajs/react';
-import { route } from 'ziggy-js';
+import { motion } from 'framer-motion';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import InputError from '@/components/input-error';
-import { motion } from 'framer-motion';
+import { ArrowLeft } from 'lucide-react';
+import React, { ReactNode } from 'react'; // ← ADD THIS LINE
 
-const colors = [
-  'bg-red-100 text-red-700 border-red-300 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800',
-  'bg-yellow-100 text-yellow-700 border-yellow-300 dark:bg-yellow-900/20 dark:text-yellow-400 dark:border-yellow-800',
-  'bg-green-100 text-green-700 border-green-300 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800',
-  'bg-blue-100 text-blue-700 border-blue-300 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800',
-  'bg-indigo-100 text-indigo-700 border-indigo-300 dark:bg-indigo-900/20 dark:text-indigo-400 dark:border-indigo-800',
-  'bg-purple-100 text-purple-700 border-purple-300 dark:bg-purple-900/20 dark:text-purple-400 dark:border-purple-800',
-  'bg-pink-100 text-pink-700 border-pink-300 dark:bg-pink-900/20 dark:text-pink-400 dark:border-pink-800',
-  'bg-orange-100 text-orange-700 border-orange-300 dark:bg-orange-900/20 dark:text-orange-400 dark:border-orange-800',
-] as const;
 
-const getColorClass = (str: string) => {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    hash = str.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  return colors[Math.abs(hash % colors.length)];
-};
-
-interface CreateProps {
-  permissions: string[];
-}
-
-const breadcrumbs: BreadcrumbItem[] = [
+const breadcrumbs = [
   { title: 'Roles', href: '/roles' },
-  { title: 'Create Role', href: '/roles/create' },
+  { title: 'Create', href: '/roles/create' },
 ];
 
-export default function Create({ permissions }: CreateProps) {
-  const { data, setData, post, processing, errors, reset } = useForm({
+const Create = ({ permissions }: { permissions: string[] }) => {
+  const { data, setData, post, processing, errors } = useForm({
     name: '',
     permissions: [] as string[],
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    post(route('roles.store'), {
-      onSuccess: () => reset(),
-      onError: () => console.log('Form errors:', errors),
-    });
+  const togglePermission = (perm: string) => {
+    setData(
+      'permissions',
+      data.permissions.includes(perm)
+        ? data.permissions.filter(p => p !== perm)
+        : [...data.permissions, perm]
+    );
   };
 
-const togglePermission = (perm: string) => {
-  const updated = data.permissions.includes(perm)
-    ? data.permissions.filter((p) => p !== perm)
-    : [...data.permissions, perm];
-
-  setData('permissions', updated);
-};
-
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    post('/roles');
+  };
 
   return (
-    <AppLayout breadcrumbs={breadcrumbs}>
-      <Head title="Create Role" />
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 md:p-6 flex items-center justify-center"
+    >
+      <div className="w-full max-w-3xl bg-white rounded-2xl shadow-xl border border-gray-200 p-8">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-2xl font-bold text-gray-900">Create Role</h1>
+          <Link href="/roles" className="text-gray-600 hover:text-gray-800 flex items-center gap-2">
+            <ArrowLeft className="w-4 h-4" /> Back
+          </Link>
+        </div>
 
-      <motion.div className="p-4 md:p-6 flex items-center justify-center min-h-[80vh]" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-        <motion.div
-          className="w-full max-w-4xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 p-8 md:p-10"
-          initial={{ scale: 0.95, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-        >
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-            <motion.div initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.1 }}>
-              <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Create New Role</h1>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Define role name and assign permissions</p>
-            </motion.div>
-
-            <Link href={route('roles.index')}>
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="px-5 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium text-sm transition hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                </svg>
-                Back to Roles
-              </motion.div>
-            </Link>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <Label htmlFor="name" className="text-gray-700 font-medium">Role Name</Label>
+            <Input
+              id="name"
+              type="text"
+              placeholder="e.g., Admin"
+              value={data.name}
+              onChange={(e) => setData('name', e.target.value)}
+              className="mt-2 h-12 rounded-xl border-gray-300 focus:ring-2 focus:ring-yellow-400"
+              required
+            />
+            <InputError message={errors.name} className="mt-1" />
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Role Name */}
-            <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }}>
-              <Label htmlFor="name" className="text-gray-700 dark:text-gray-300 font-medium">
-                Role Name
-              </Label>
-              <Input
-                id="name"
-                type="text"
-                placeholder="e.g., CEO, HR, Admin"
-                required
-                value={data.name}
-                onChange={(e) => setData('name', e.target.value)}
-                className="mt-2 h-12 rounded-xl border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-              <InputError message={errors.name} className="mt-1" />
-            </motion.div>
-
-            {/* Permissions */}
-            <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.3 }}>
-              <Label className="text-gray-700 dark:text-gray-300 font-medium mb-3">Assign Permissions</Label>
-
-              {permissions.length === 0 ? (
-                <p className="text-sm text-gray-500 dark:text-gray-400 italic">No permissions available. Run the seeder.</p>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {permissions.map((perm, i) => {
-                    const isSelected = data.permissions.includes(perm);
-                    const colorClass = getColorClass(perm);
-
-                    return (
-                      <motion.label
-                        key={perm}
-                        className={`flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all duration-200 select-none
-                          ${isSelected
-                            ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-500 shadow-md ring-2 ring-blue-200 dark:ring-blue-800'
-                            : `border-transparent ${colorClass} hover:ring-2 hover:ring-current`
-                          }`}
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 0.4 + i * 0.03 }}
-                        whileHover={{ scale: 1.03 }}
-                        whileTap={{ scale: 0.98 }}
-                      >
-                        <input
-                          type="checkbox"
-                          name="permissions[]"
-                          value={perm}
-                          checked={isSelected}
-                          onChange={() => togglePermission(perm)}
-                          className="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
-                        />
-                        <span
-                          className={`text-sm font-medium truncate px-3 py-1.5 rounded-full transition-all
-                            ${isSelected ? 'bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-300' : colorClass}`}
-                        >
-                          {perm.replace(/\./g, ' · ')}
-                        </span>
-                      </motion.label>
-                    );
-                  })}
+          <div>
+            <Label className="text-gray-700 font-medium">Permissions</Label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+              {permissions.map((perm) => (
+                <div key={perm} className="flex items-center gap-2">
+                  <Checkbox
+                    id={perm}
+                    checked={data.permissions.includes(perm)}
+                    onCheckedChange={() => togglePermission(perm)}
+                  />
+                  <label htmlFor={perm} className="text-sm text-gray-700">{perm}</label>
                 </div>
-              )}
-              <InputError message={errors.permissions} className="mt-2" />
-            </motion.div>
+              ))}
+            </div>
+            <InputError message={errors.permissions} className="mt-1" />
+          </div>
 
-            {/* Submit */}
-            <motion.div className="pt-6 flex justify-end" initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.5 }}>
-              <Button
-                type="submit"
-                disabled={processing}
-                className="px-8 py-3 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold text-base shadow-lg transition-all hover:shadow-xl disabled:opacity-50 flex items-center gap-2"
-              >
-                {processing ? (
-                  <>
-                    <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
-                    </svg>
-                    Creating...
-                  </>
-                ) : (
-                  'Create Role'
-                )}
-              </Button>
-            </motion.div>
-          </form>
-        </motion.div>
-      </motion.div>
-    </AppLayout>
+          <Button
+            type="submit"
+            disabled={processing}
+            className="w-full h-12 rounded-xl bg-yellow-400 hover:bg-yellow-500 text-black font-bold shadow-md transition-all flex items-center justify-center gap-2"
+          >
+            {processing ? 'Creating...' : 'Create Role'}
+          </Button>
+        </form>
+      </div>
+    </motion.div>
   );
-}
+};
+
+Create.layout = (page: ReactNode) => (
+  <AppLayout breadcrumbs={breadcrumbs}>
+    {page}
+  </AppLayout>
+);
+
+export default Create;

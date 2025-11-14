@@ -21,6 +21,20 @@ class PermissionSeeder extends Seeder
             'roles.create',
             'roles.edit',
             'roles.delete',
+            'access.dashboard',
+            'tasks.edit',
+            'tasks.create',
+            'tasks.delete',  
+            'access.tasks',
+            'access.projects',           
+            'projects.view',
+            'projects.create',
+            'projects.edit',
+            'projects.delete',
+            'access.leaderboards',
+            'task.view',
+            
+
         ];
 
         foreach ($permissions as $permission) {

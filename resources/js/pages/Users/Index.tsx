@@ -1,10 +1,8 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem } from '@/types';
-import { PencilIcon, EyeIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion';
-
-const breadcrumbs: BreadcrumbItem[] = [{ title: 'Users', href: '/users' }];
+import { UserCheck, UserX, Eye, Pencil, Trash2, Plus } from 'lucide-react';
+import React, { ReactNode } from 'react'; // ← ADD THIS LINE
 
 interface User {
   id: number;
@@ -13,119 +11,94 @@ interface User {
   email_verified_at: string | null;
   two_factor_confirmed_at: string | null;
   created_at: string;
-  updated_at: string;
 }
 
-interface Props {
-  users: User[];
-}
-
-export default function UsersIndex({ users = [] }: Props) {
+export default function UsersIndex({ users = [] }: { users: User[] }) {
   const { flash } = usePage().props as any;
 
   const handleDelete = (id: number) => {
-    if (window.confirm('Are you sure you want to delete this user?')) {
-      router.delete(`/users/${id}`);
-    }
+    if (confirm('Delete user?')) router.delete(`/users/${id}`);
   };
 
-  const columns = [
-    'id',
-    'name',
-    'email',
-    'email_verified_at',
-    'two_factor_confirmed_at',
-    'created_at',
-    'updated_at',
-  ] as const;
-
-  const formatStatus = (value: string | null) => 
-    value ? <span className="bg-green-100 text-green-800 px-2 py-0.5 rounded-full text-xs font-medium">Yes</span>
-          : <span className="bg-red-100 text-red-800 px-2 py-0.5 rounded-full text-xs font-medium">No</span>;
+  const StatusBadge = ({ verified }: { verified: boolean }) => (
+    <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${verified ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+      {verified ? <UserCheck className="w-3.5 h-3.5" /> : <UserX className="w-3.5 h-3.5" />}
+      {verified ? 'Yes' : 'No'}
+    </span>
+  );
 
   return (
-    <AppLayout breadcrumbs={breadcrumbs}>
-      <Head title="Users" />
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 md:p-6">
+      <div className="max-w-7xl mx-auto">
 
-      {flash?.success && (
-        <div className="mb-6 p-3 bg-green-100 text-green-800 rounded shadow-sm">
-          {flash.success}
+        {flash?.success && (
+          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-6 p-4 bg-green-100 text-green-800 rounded-xl shadow-sm border border-green-200 flex items-center gap-2">
+            {flash.success}
+          </motion.div>
+        )}
+
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900">Users</h1>
+          
+          <Link href="/users/create" className="bg-yellow-400 hover:bg-yellow-500 text-black font-semibold px-5 py-3 rounded-xl shadow-lg transition-all transform hover:scale-105 flex items-center gap-2">
+            <Plus className="w-5 h-5" /> Add User
+          </Link>
         </div>
-      )}
 
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-        <h1 className="text-3xl font-bold text-gray-800">Users</h1>
-        <Link
-          href="/users/create"
-          className="bg-blue-600 text-white px-5 py-2 rounded-lg shadow hover:bg-blue-700 transition"
-        >
-          + Create User
-        </Link>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
+          <div className="p-4 border-b bg-gray-50">
+            <p className="text-sm font-medium text-gray-700">{users.length} user{users.length !== 1 ? 's' : ''}</p>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-200">
+                  {['Name', 'Email', 'Email Verified', '2FA', 'Joined', 'Actions'].map(h => (
+                    <th key={h} className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {users.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="px-6 py-20 text-center">
+                      <UserX className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                      <p className="text-lg font-medium text-gray-600">No users</p>
+                    </td>
+                  </tr>
+                ) : (
+                  users.map((u, i) => (
+                    <motion.tr key={u.id} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }} className="hover:bg-gray-50/70 group">
+                      <td className="px-6 py-5 font-semibold text-gray-900">{u.name}</td>
+                      <td className="px-6 py-5 text-gray-700">{u.email}</td>
+                      <td className="px-6 py-5"><StatusBadge verified={!!u.email_verified_at} /></td>
+                      <td className="px-6 py-5"><StatusBadge verified={!!u.two_factor_confirmed_at} /></td>
+                      <td className="px-6 py-5 text-sm text-gray-600">{new Date(u.created_at).toLocaleDateString()}</td>
+                      <td className="px-6 py-5">
+                        <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Link href={`/users/${u.id}`} className="p-2 rounded-lg bg-green-50 text-green-700 hover:bg-green-100">
+                            <Eye className="w-4 h-4" />
+                          </Link>
+                          <Link href={`/users/${u.id}/edit`} className="p-2 rounded-lg bg-yellow-50 text-yellow-700 hover:bg-yellow-100">
+                            <Pencil className="w-4 h-4" />
+                          </Link>
+                          <button onClick={() => handleDelete(u.id)} className="p-2 rounded-lg bg-red-50 text-red-700 hover:bg-red-100">
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </motion.tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </motion.div>
       </div>
-
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="bg-white dark:bg-gray-800 shadow-2xl rounded-xl overflow-x-auto border border-gray-200 dark:border-gray-700"
-      >
-        <table className="min-w-full table-auto text-sm">
-          <thead className="bg-gray-100 dark:bg-gray-700 text-left font-semibold text-gray-800 dark:text-gray-200">
-            <tr>
-              {columns.map((key) => (
-                <th key={key} className="px-3 py-2 border uppercase tracking-wider">{key.replace(/_/g, ' ')}</th>
-              ))}
-              <th className="px-3 py-2 border uppercase tracking-wider">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.length === 0 ? (
-              <tr>
-                <td colSpan={columns.length + 1} className="px-3 py-12 text-center text-gray-500">
-                  No users found.
-                </td>
-              </tr>
-            ) : (
-              users.map(user => (
-                <motion.tr
-                  key={user.id}
-                  whileHover={{ scale: 1.01 }}
-                  className="transition hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
-                >
-                  <td className="px-3 py-2 border">{user.id}</td>
-                  <td className="px-3 py-2 border font-semibold">{user.name}</td>
-                  <td className="px-3 py-2 border">{user.email}</td>
-                  <td className="px-3 py-2 border">{formatStatus(user.email_verified_at)}</td>
-                  <td className="px-3 py-2 border">{formatStatus(user.two_factor_confirmed_at)}</td>
-                  <td className="px-3 py-2 border">{new Date(user.created_at).toLocaleString()}</td>
-                  <td className="px-3 py-2 border">{new Date(user.updated_at).toLocaleString()}</td>
-                  <td className="px-3 py-2 border flex gap-1">
-                    <Link
-                      href={`/users/${user.id}/edit`}
-                      className="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600 text-xs"
-                    >
-                      Edit
-                    </Link>
-                    <Link
-                      href={`/users/${user.id}`}
-                      className="bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600 text-xs"
-                    >
-                      View
-                    </Link>
-                    <button
-                      type="button"
-                      onClick={() => handleDelete(user.id)}
-                      className="bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700 text-xs"
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </motion.tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </motion.div>
-    </AppLayout>
+    </div>
   );
 }
+
+(UsersIndex as any).layout = (page: ReactNode) => (
+  <AppLayout breadcrumbs={[{ title: 'Users', href: '/users' }]}>{page}</AppLayout>
+);
