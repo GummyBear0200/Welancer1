@@ -1,3 +1,5 @@
+// resources/js/app.tsx
+
 import '../css/app.css';
 
 import { createInertiaApp } from '@inertiajs/react';
@@ -9,25 +11,33 @@ import { initializeTheme } from './hooks/use-appearance';
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
 createInertiaApp({
-    title: (title) => (title ? `${title} - ${appName}` : appName),
-    resolve: (name) =>
-        resolvePageComponent(
-            `./pages/${name}.tsx`,
-            import.meta.glob('./pages/**/*.tsx'),
-        ),
-    setup({ el, App, props }) {
-        const root = createRoot(el);
+  title: (title) => (title ? `${title} - ${appName}` : appName),
 
-        root.render(
-            <StrictMode>
-                <App {...props} />
-            </StrictMode>,
-        );
-    },
-    progress: {
-        color: '#4B5563',
-    },
+  resolve: (name) =>
+    resolvePageComponent(
+      `./pages/${name}.tsx`,
+      import.meta.glob('./pages/**/*.tsx'),
+    ).catch((error) => {
+      console.error(`Page not found: ./pages/${name}.tsx`);
+      console.error(error);
+      throw error;
+    }),
+
+  setup({ el, App, props }) {
+    const Page = App as any;
+    const Layout = Page.layout || ((page: any) => page);
+
+    createRoot(el).render(
+      <StrictMode>
+        {Layout(<App {...props} />)}
+      </StrictMode>
+    );
+  },
+
+  progress: {
+    color: '#4B5563',
+  },
 });
 
-// This will set light / dark mode on load...
+// Initialize theme
 initializeTheme();

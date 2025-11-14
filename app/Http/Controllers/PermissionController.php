@@ -8,6 +8,9 @@ use Spatie\Permission\Models\Permission;
 
 class PermissionController extends Controller
 {
+    /**
+     * Display a listing of permissions.
+     */
     public function index()
     {
         $permissions = Permission::all();
@@ -17,25 +20,38 @@ class PermissionController extends Controller
         ]);
     }
 
+    /**
+     * Show the form for creating a new permission.
+     */
     public function create()
     {
         return Inertia::render('Permissions/Create');
     }
 
+    /**
+     * Store a newly created permission.
+     */
     public function store(Request $request)
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255|unique:permissions,name',
+            'guard_name' => 'sometimes|string', // optional
         ]);
 
-        Permission::create($validated);
+        Permission::create([
+            'name' => $validated['name'],
+            'guard_name' => $validated['guard_name'] ?? 'web',
+        ]);
 
-        return redirect()->route('permissions.index')
-                         ->with('success', 'Permission created successfully!');
+        return redirect()
+            ->route('permissions.index')
+            ->with('flash', ['success' => 'Permission created successfully!']);
     }
 
-    // NEW: Show single permission
-    public function show(string $id)
+    /**
+     * Display the specified permission.
+     */
+    public function show(int $id)
     {
         $permission = Permission::findOrFail($id);
 
@@ -44,7 +60,10 @@ class PermissionController extends Controller
         ]);
     }
 
-    public function edit(string $id)
+    /**
+     * Show the form for editing the specified permission.
+     */
+    public function edit(int $id)
     {
         $permission = Permission::findOrFail($id);
 
@@ -53,26 +72,38 @@ class PermissionController extends Controller
         ]);
     }
 
-    public function update(Request $request, string $id)
+    /**
+     * Update the specified permission.
+     */
+    public function update(Request $request, int $id)
     {
         $permission = Permission::findOrFail($id);
 
         $validated = $request->validate([
             'name' => 'required|string|max:255|unique:permissions,name,' . $id,
+            'guard_name' => 'sometimes|string',
         ]);
 
-        $permission->update($validated);
+        $permission->update([
+            'name' => $validated['name'],
+            'guard_name' => $validated['guard_name'] ?? $permission->guard_name,
+        ]);
 
-        return redirect()->route('permissions.index')
-                         ->with('success', 'Permission updated successfully!');
+        return redirect()
+            ->route('permissions.index')
+            ->with('flash', ['success' => 'Permission updated successfully!']);
     }
 
-    public function destroy(string $id)
+    /**
+     * Remove the specified permission.
+     */
+    public function destroy(int $id)
     {
         $permission = Permission::findOrFail($id);
         $permission->delete();
 
-        return redirect()->route('permissions.index')
-                         ->with('success', 'Permission deleted successfully!');
+        return redirect()
+            ->route('permissions.index')
+            ->with('flash', ['success' => 'Permission deleted successfully!']);
     }
 }

@@ -1,135 +1,131 @@
-    // resources/js/pages/Users/Index.tsx
-    import { Head, Link, router, usePage } from '@inertiajs/react';
-    import AppLayout from '@/layouts/app-layout';
-    import { type BreadcrumbItem } from '@/types';
-    import { PencilIcon, EyeIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { Head, Link, router, usePage } from '@inertiajs/react';
+import AppLayout from '@/layouts/app-layout';
+import { type BreadcrumbItem } from '@/types';
+import { PencilIcon, EyeIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { motion } from 'framer-motion';
 
-    const breadcrumbs: BreadcrumbItem[] = [{ title: 'Users', href: '/users' }];
+const breadcrumbs: BreadcrumbItem[] = [{ title: 'Users', href: '/users' }];
 
-    interface User {
-    id: number;
-    name: string;
-    email: string;
-    email_verified_at: string | null;
-    two_factor_confirmed_at: string | null;
-    created_at: string;
-    updated_at: string;
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  email_verified_at: string | null;
+  two_factor_confirmed_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+interface Props {
+  users: User[];
+}
+
+export default function UsersIndex({ users = [] }: Props) {
+  const { flash } = usePage().props as any;
+
+  const handleDelete = (id: number) => {
+    if (window.confirm('Are you sure you want to delete this user?')) {
+      router.delete(`/users/${id}`);
     }
+  };
 
-    interface Props {
-    users: User[];
-    }
+  const columns = [
+    'id',
+    'name',
+    'email',
+    'email_verified_at',
+    'two_factor_confirmed_at',
+    'created_at',
+    'updated_at',
+  ] as const;
 
-    export default function UsersIndex({ users = [] }: Props) {
-    const { flash } = usePage().props as any;
+  const formatStatus = (value: string | null) => 
+    value ? <span className="bg-green-100 text-green-800 px-2 py-0.5 rounded-full text-xs font-medium">Yes</span>
+          : <span className="bg-red-100 text-red-800 px-2 py-0.5 rounded-full text-xs font-medium">No</span>;
 
-    const handleDelete = (id: number) => {
-        if (window.confirm('Are you sure you want to delete this user?')) {
-        }
-    };
+  return (
+    <AppLayout breadcrumbs={breadcrumbs}>
+      <Head title="Users" />
 
-    const columns = [
-        'id',
-        'name',
-        'email',
-        'email_verified_at',
-        'two_factor_confirmed_at',
-        'created_at',
-        'updated_at',
-    ] as const;
-
-    return (
-        <AppLayout breadcrumbs={breadcrumbs}>
-        <Head title="Users" />
-
-        {/* Flash */}
-        {flash?.success && (
-            <div className="mb-4 p-3 bg-green-100 text-green-800 rounded">
-            {flash.success}
-            </div>
-        )}
-
-        <div className="flex justify-between items-center mb-4">
-            <h1 className="text-2xl font-semibold text-gray-800">Users</h1>
-            <Link
-            href="/users/create"
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
-            >
-            Create User
-            </Link>
+      {flash?.success && (
+        <div className="mb-6 p-3 bg-green-100 text-green-800 rounded shadow-sm">
+          {flash.success}
         </div>
+      )}
 
-        <div className="overflow-x-auto rounded-lg shadow-lg">
-            <table className="min-w-full divide-y divide-gray-200 border border-gray-200">
-            <thead className="bg-gray-50">
-                <tr>
-                {columns.map((key) => (
-                    <th
-                    key={key}
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+        <h1 className="text-3xl font-bold text-gray-800">Users</h1>
+        <Link
+          href="/users/create"
+          className="bg-blue-600 text-white px-5 py-2 rounded-lg shadow hover:bg-blue-700 transition"
+        >
+          + Create User
+        </Link>
+      </div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="bg-white dark:bg-gray-800 shadow-2xl rounded-xl overflow-x-auto border border-gray-200 dark:border-gray-700"
+      >
+        <table className="min-w-full table-auto text-sm">
+          <thead className="bg-gray-100 dark:bg-gray-700 text-left font-semibold text-gray-800 dark:text-gray-200">
+            <tr>
+              {columns.map((key) => (
+                <th key={key} className="px-3 py-2 border uppercase tracking-wider">{key.replace(/_/g, ' ')}</th>
+              ))}
+              <th className="px-3 py-2 border uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {users.length === 0 ? (
+              <tr>
+                <td colSpan={columns.length + 1} className="px-3 py-12 text-center text-gray-500">
+                  No users found.
+                </td>
+              </tr>
+            ) : (
+              users.map(user => (
+                <motion.tr
+                  key={user.id}
+                  whileHover={{ scale: 1.01 }}
+                  className="transition hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
+                >
+                  <td className="px-3 py-2 border">{user.id}</td>
+                  <td className="px-3 py-2 border font-semibold">{user.name}</td>
+                  <td className="px-3 py-2 border">{user.email}</td>
+                  <td className="px-3 py-2 border">{formatStatus(user.email_verified_at)}</td>
+                  <td className="px-3 py-2 border">{formatStatus(user.two_factor_confirmed_at)}</td>
+                  <td className="px-3 py-2 border">{new Date(user.created_at).toLocaleString()}</td>
+                  <td className="px-3 py-2 border">{new Date(user.updated_at).toLocaleString()}</td>
+                  <td className="px-3 py-2 border flex gap-1">
+                    <Link
+                      href={`/users/${user.id}/edit`}
+                      className="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600 text-xs"
                     >
-                    {key.replace(/_/g, ' ')}
-                    </th>
-                ))}
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                </th>
-                </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-                {users.length === 0 ? (
-                <tr>
-                    <td colSpan={columns.length + 1} className="px-6 py-12 text-center text-gray-500">
-                    No users found.
-                    </td>
-                </tr>
-                ) : (
-                users.map((user) => (
-                    <tr key={user.id} className="hover:bg-gray-50">
-                    {columns.map((key) => (
-                        <td
-                        key={key}
-                        className="px-6 py-4 whitespace-nowrap text-sm text-gray-700"
-                        >
-                        {(user as any)[key]?.toString() || '-'}
-                        </td>
-                    ))}
-
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 flex space-x-3">
-                        {/* Edit */}
-                        <Link
-                        href={`/users/${user.id}/edit`}
-                        className="text-blue-600 hover:text-blue-800"
-                        title="Edit"
-                        >
-                        <PencilIcon className="h-5 w-5" />
-                        </Link>
-
-                        {/* View */}
-                        <Link
-                        href={`/users/${user.id}`}
-                        className="text-green-600 hover:text-green-800"
-                        title="View"
-                        >
-                        <EyeIcon className="h-5 w-5" />
-                        </Link>
-
-                        {/* DELETE – RED TRASH ICON */}
-                        <button
-                        type="button"
-                        onClick={() => handleDelete(user.id)}
-                        className="text-red-600 hover:text-red-800 transition-colors"
-                        title="Delete"
-                        >
-                        <TrashIcon className="h-5 w-5" />
-                        </button>
-                    </td>
-                    </tr>
-                ))
-                )}
-            </tbody>
-            </table>
-        </div>
-        </AppLayout>
-    );
-    }
+                      Edit
+                    </Link>
+                    <Link
+                      href={`/users/${user.id}`}
+                      className="bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600 text-xs"
+                    >
+                      View
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(user.id)}
+                      className="bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700 text-xs"
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </motion.tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </motion.div>
+    </AppLayout>
+  );
+}

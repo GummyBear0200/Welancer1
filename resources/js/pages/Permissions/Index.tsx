@@ -1,8 +1,7 @@
-// resources/js/pages/Permissions/Index.tsx
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { PencilIcon, EyeIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Permissions', href: '/permissions' }];
 
@@ -24,13 +23,12 @@ export default function PermissionsIndex({ permissions = [] }: Props) {
     if (window.confirm('Are you sure you want to delete this permission?')) {
       router.delete(`/permissions/${id}`, {
         preserveScroll: true,
-        onSuccess: () => {},
         onError: () => alert('Failed to delete permission.'),
       });
     }
   };
 
-  const columns = ['id', 'name', 'created_at', 'updated_at'] as const;
+  const columns = ['ID', 'Name', 'Created At', 'Updated At'];
 
   return (
     <AppLayout breadcrumbs={breadcrumbs}>
@@ -38,38 +36,41 @@ export default function PermissionsIndex({ permissions = [] }: Props) {
 
       {/* Flash */}
       {flash?.success && (
-        <div className="mb-4 p-3 bg-green-100 text-green-800 rounded">
+        <div className="mb-6 p-4 bg-green-100 text-green-800 rounded-lg shadow-sm border border-green-200">
           {flash.success}
         </div>
       )}
 
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-semibold text-gray-800">Permissions</h1>
+      {/* Header */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+        <h1 className="text-3xl font-bold text-gray-800">Permissions</h1>
         <Link
           href="/permissions/create"
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+          className="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 shadow transition transform hover:scale-105"
         >
-          Create Permission
+          + Create Permission
         </Link>
       </div>
 
-      <div className="overflow-x-auto rounded-lg shadow-lg">
-        <table className="min-w-full divide-y divide-gray-200 border border-gray-200">
+      {/* Table */}
+      <div className="overflow-x-auto rounded-lg shadow-lg border border-gray-200">
+        <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              {columns.map((key) => (
+              {columns.map((col) => (
                 <th
-                  key={key}
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  key={col}
+                  className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-700 transition"
                 >
-                  {key.replace(/_/g, ' ')}
+                  {col}
                 </th>
               ))}
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-  Actions
-</th>
+              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                Actions
+              </th>
             </tr>
           </thead>
+
           <tbody className="bg-white divide-y divide-gray-200">
             {permissions.length === 0 ? (
               <tr>
@@ -79,40 +80,27 @@ export default function PermissionsIndex({ permissions = [] }: Props) {
               </tr>
             ) : (
               permissions.map((permission) => (
-                <tr key={permission.id} className="hover:bg-gray-50">
-                  {columns.map((key) => (
-                    <td
-                      key={key}
-                      className="px-6 py-4 whitespace-nowrap text-sm text-gray-700"
-                    >
-                      {(permission as any)[key]?.toString() || '-'}
-                    </td>
-                  ))}
+                <tr
+                  key={permission.id}
+                  className="hover:bg-gray-50 transition-colors cursor-pointer"
+                >
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{permission.id}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{permission.name}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{permission.created_at}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{permission.updated_at}</td>
 
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 flex space-x-3">
-                    {/* Edit */}
+                  <td className="px-6 py-4 whitespace-nowrap flex gap-3">
                     <Link
                       href={`/permissions/${permission.id}/edit`}
-                      className="text-blue-600 hover:text-blue-800"
+                      className="text-blue-600 hover:text-blue-800 transition transform hover:scale-110"
                       title="Edit"
                     >
                       <PencilIcon className="h-5 w-5" />
                     </Link>
 
-                    {/* View */}
-                    <Link
-                      href={`/permissions/${permission.id}`}
-                      className="text-green-600 hover:text-green-800"
-                      title="View"
-                    >
-                      <EyeIcon className="h-5 w-5" />
-                    </Link>
-
-                    {/* DELETE – RED TRASH ICON */}
                     <button
-                      type="button"
                       onClick={() => handleDelete(permission.id)}
-                      className="text-red-600 hover:text-red-800 transition-colors"
+                      className="text-red-600 hover:text-red-800 transition transform hover:scale-110"
                       title="Delete"
                     >
                       <TrashIcon className="h-5 w-5" />
