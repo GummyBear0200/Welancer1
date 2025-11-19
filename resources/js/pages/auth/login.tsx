@@ -71,7 +71,7 @@ export default function Login({ status, canResetPassword, canRegister }: LoginPr
                                                 href={request()}
                                                 className="text-sm text-yellow-400 hover:underline"
                                             >
-                                                Forgot password?
+                                              
                                             </TextLink>
                                         )}
                                     </div>
